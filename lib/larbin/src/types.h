@@ -5,15 +5,13 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-// Size of the HashSize (max number of urls that can be fetched)
-#define hashSize 64000000
+#define hashSize 64000000                                                               // hashTable容量, 可获取的最大url数量
 
-// Size of the duplicate hashTable
-#define dupSize hashSize
+#define dupSize hashSize                                                                // 备份的hasTable大小
 #define dupFile "dupfile.bak"
 
 // Size of the arrays of Sites in main memory
-#define namedSiteListSize 20000
+#define namedSiteListSize 20000                                                         // 
 #define IPSiteListSize 10000
 
 // Max number of urls in ram
@@ -42,42 +40,42 @@
 #define maxRobotsItem 100
 
 // file name used for storing urls on disk
-#define fifoFile "fifo"
-#define fifoFileWait "fifowait"
+#define fifoFile "fifo"                                                                 // 用于在磁盘存储低优先级 url 的文件名
+#define fifoFileWait "fifowait"                                                         // 用于在磁盘存储超过低优先级数量 url 的文件名
 
 // number of urls per file on disk
 // should be equal to ramUrls for good interaction with restart
-#define urlByFile ramUrls
+#define urlByFile ramUrls                                                               // 每个文件中存放url的数量
 
 // Size of the buffer used to read sockets
-#define BUF_SIZE 16384
-#define STRING_SIZE 1024
+#define BUF_SIZE 16384                                                                  // 每个网页文件缓冲区大小
+#define STRING_SIZE 1024                                                                // 字符串缓冲区大小
 
 // Max size for a url
-#define maxUrlSize 512
-#define maxSiteSize 40    // max size for the name of a site
+#define maxUrlSize 512                                                                  // url最大数量
+#define maxSiteSize 40                                                                  // site最大数量
 
 // max size for cookies
-#define maxCookieSize 128
+#define maxCookieSize 128                                                               // cookie最大数量
 
 // Standard size of a fifo in a Site
-#define StdVectSize maxRobotsItem
+#define StdVectSize maxRobotsItem                                                       // 一个sit的队列最大长度
 
 // maximum number of input connections
-#define maxInput 5
+#define maxInput 5                                                                      // 输入连接的最大连接数
 
 // if we save files, how many files per directory and where
-#define filesPerDir 2000
-#define saveDir "save/"
-#define indexFile "index.html"    // for MIRROR_SAVE
+#define filesPerDir 2000                                                                // 每个文件夹中文件数
+#define saveDir "save/"                                                                 // 保存文件位置
+#define indexFile "index.html"    // for MIRROR_SAVE    
 #define nbDir 1000                // for MIRROR_SAVE
 
 // options for SPECIFICSEARCH (except with DEFAULT_SPECIFIC)
-#define specDir "specific/"
+#define specDir "specific/"                                                             // 检索
 #define maxSpecSize 5000000
 
 // Various reasons of error when getting a page
-#define nbAnswers 16
+#define nbAnswers 16                                                                    // 获取page时返回的错误
 enum FetchError
 {
   success,

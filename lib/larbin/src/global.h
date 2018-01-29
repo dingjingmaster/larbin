@@ -35,14 +35,15 @@
  * fetchPipe reads those which are linked
  */
 struct Connexion {
-  char state;      // what about this socket : EMPTY, CONNECTING, WRITE, OPEN
-  int pos;         // What part of the request has been sent
-  FetchError err;  // How did the fetch terminates
-  int socket;      // number of the fds
-  int timeout;  // timeout for this connexion
-  LarbinString request;  // what is the http request
-  file *parser;    // parser for the connexion (a robots.txt or an html file)
+  char state;                                       // socket 状态: EMPTY, CONNECTING, WRITE, OPEN
+  int pos;                                          // What part of the request has been sent
+  FetchError err;                                   // How did the fetch terminates
+  int socket;                                       // number of the fds
+  int timeout;                                      // timeout for this connexion
+  LarbinString request;                             // what is the http request
+  file *parser;                                     // parser for the connexion (a robots.txt or an html file)
   char buffer[maxPageSize];
+
   /** Constructor */
   Connexion ();
   /** Dectructor : it is never used since we reuse connections */
@@ -53,8 +54,7 @@ struct Connexion {
 };
 
 struct global {
-  /** Constructor : see global.cc for details */
-  global (int argc, char * argv[]);
+  global (int argc, char * argv[]);                 // 构造函数
   /** Destructor : never used */
   ~global ();
   /** current time : avoid to many calls to time(NULL) */

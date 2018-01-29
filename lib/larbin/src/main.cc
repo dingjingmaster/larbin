@@ -27,6 +27,7 @@
 #include "utils/webserver.h"
 #include "utils/histogram.h"
 
+/**/
 static void cron ();
 
 ///////////////////////////////////////////////////////////
@@ -38,7 +39,7 @@ static void handler (int i) {
 #endif // PROF
 
 // wait to limit bandwidth usage
-#ifdef MAXBANDWIDTH
+#ifdef MAXBANDWIDTH                                                                         // 设置最大带宽
 static void waitBandwidth (time_t *old) {
   while (global::remainBand < 0) {
     poll(NULL, 0, 10);
@@ -59,44 +60,48 @@ static uint count = 0;
 
 ///////////////////////////////////////////////////////////
 // If this thread terminates, the whole program exits
+
+
+// 程序入口
 int main (int argc, char *argv[]) {
   // create all the structures
-  global glob(argc, argv);
+  global glob(argc, argv);                                                                  // 初始化爬虫参数设置
 #ifdef PROF
-  signal (2, handler);
+  signal (2, handler);                                                                      // 键盘打断信号 SIGINT
 #endif // PROF
 
 #ifndef NOWEBSERVER
   // launch the webserver if needeed
   if (global::httpPort != 0)
-    startThread(startWebserver, NULL);
+    startThread(startWebserver, NULL);                                                      // 打开webUI界面
 #endif // NOWEBSERVER
 
   // Start the search
   printf("%s is starting its search\n", global::userAgent);
-  time_t old = global::now;
+  time_t old = global::now;                                                                 // 
 
   for (;;) {
     // update time
-    global::now = time(NULL);
+    global::now = time(NULL);                                                               // 更新时间
     if (old != global::now) {
       // this block is called every second
       old = global::now;
-      cron();
+      cron();                                                                               // 抓取任务
     }
+
     stateMain(-count);
     waitBandwidth(&old);
     stateMain(1);
-    for (int i=0; i<global::maxFds; i++)
+    for (int i = 0; i < global::maxFds; ++ i)
       global::ansPoll[i] = 0;
-    for (uint i=0; i<global::posPoll; i++)
+    for (uint i = 0; i < global::posPoll; ++ i)
       global::ansPoll[global::pollfds[i].fd] = global::pollfds[i].revents;
     global::posPoll = 0;
     stateMain(2);
     input();
     stateMain(3);
     sequencer();
-    stateMain(4);
+    stateMain(4);                                                                           //
     fetchDns();
     stateMain(5);
     fetchOpen();
@@ -104,7 +109,7 @@ int main (int argc, char *argv[]) {
     checkAll();
     // select
     stateMain(count++);
-    poll(global::pollfds, global::posPoll, 10);
+    poll(global::pollfds, global::posPoll, 10);                                             //
     stateMain(7);
   }
 }
@@ -113,17 +118,17 @@ int main (int argc, char *argv[]) {
 static void cron () {
   // shall we stop
 #ifdef PROF
-  if (stop) exit(2);
+  if (stop) exit(2);                                                                        // 检查参数是否退出
 #endif // PROF
-#ifdef EXIT_AT_END
+#ifdef EXIT_AT_END                                                                          // 处于 抓取完退出 模式下的退出条件
   if (global::URLsDisk->getLength() == 0
       && global::URLsDiskWait->getLength() == 0
-      && debUrl == 0)
+      && debUrl == 0)                                                   
     exit(0);
 #endif // EXIT_AT_END
 
   // look for timeouts
-  checkTimeout();
+  checkTimeout();                                                                           // 检查是否超时
   // see if we should read again urls in fifowait
   if ((global::now % 300) == 0) {
     global::readPriorityWait = global::URLsPriorityWait->getLength();
@@ -136,7 +141,7 @@ static void cron () {
 
 #ifdef MAXBANDWIDTH
   // give bandwidth
-  if (global::remainBand > 0) {
+  if (global::remainBand > 0) {                                                             // 
     global::remainBand = MAXBANDWIDTH;
   } else {
     global::remainBand = global::remainBand + MAXBANDWIDTH;

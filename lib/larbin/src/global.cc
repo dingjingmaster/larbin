@@ -38,22 +38,22 @@ hashTable *global::seen;
 #ifdef NO_DUP
 hashDup *global::hDuplicate;
 #endif // NO_DUP
-SyncFifo<url> *global::URLsPriority;
-SyncFifo<url> *global::URLsPriorityWait;
-uint global::readPriorityWait=0;
-PersistentFifo *global::URLsDisk;
-PersistentFifo *global::URLsDiskWait;
-uint global::readWait=0;
+SyncFifo<url> *global::URLsPriority;                                                // 存放待处理的url列表,优先级高
+SyncFifo<url> *global::URLsPriorityWait;                                            // 当前正处理url超过上限,存放待处理的url列表,优先级高
+uint global::readPriorityWait=0;                                                    // 当前待处理url列表记录数
+PersistentFifo *global::URLsDisk;                                                   // 存放待处理的url
+PersistentFifo *global::URLsDiskWait;                                               // 当前正处理的url超过上限,存放待处理url列表
+uint global::readWait=0;                                                            // 当前 URLDiskWait 记录数
 IPSite *global::IPSiteList;
-NamedSite *global::namedSiteList;
-Fifo<IPSite> *global::okSites;
+NamedSite *global::namedSiteList;                                                   // 存放域名及域名解析状态,用来排重和定位
+Fifo<IPSite> *global::okSites;                                                      // 存放经过dns解析,待爬取的数据
 Fifo<NamedSite> *global::dnsSites;
-Connexion *global::connexions;
+Connexion *global::connexions;                                                      // 连接对象,绑定当前状态及响应的处理器
 adns_state global::ads;
 uint global::nbDnsCalls = 0;
 ConstantSizedFifo<Connexion> *global::freeConns;
 #ifdef THREAD_OUTPUT
-ConstantSizedFifo<Connexion> *global::userConns;
+ConstantSizedFifo<Connexion> *global::userConns;                                    //
 #endif
 Interval *global::inter;
 int8_t global::depthInSite;
@@ -76,7 +76,7 @@ uint global::sizePoll;
 short *global::ansPoll;
 int global::maxFds;
 #ifdef MAXBANDWIDTH
-long int global::remainBand = MAXBANDWIDTH;
+long int global::remainBand = MAXBANDWIDTH;                                         // 带宽
 #endif // MAXBANDWIDTH
 int global::IPUrl = 0;
 
@@ -108,7 +108,7 @@ global::global (int argc, char *argv[]) {
       std::cerr << "usage : " << argv[0];
       std::cerr << " [-c configFile] [-scratch]\n";
 	exit(1);
-  }
+  }                                                                                 // 默认配置文件
 
   // Standard values
   waitDuration = 60;
@@ -122,14 +122,14 @@ global::global (int argc, char *argv[]) {
   proxyAddr = NULL;
   domains = NULL;
   // FIFOs
-  URLsDisk = new PersistentFifo(reload, fifoFile);
-  URLsDiskWait = new PersistentFifo(reload, fifoFileWait);
-  URLsPriority = new SyncFifo<url>;
-  URLsPriorityWait = new SyncFifo<url>;
+  URLsDisk = new PersistentFifo(reload, fifoFile);                                  // 低优先的url列表
+  URLsDiskWait = new PersistentFifo(reload, fifoFileWait);                          // 低优先url列表满了之后暂存
+  URLsPriority = new SyncFifo<url>;                                                 // 高优先url列表
+  URLsPriorityWait = new SyncFifo<url>;                                             // 高优先url列表满了之后暂存
   inter = new Interval(ramUrls);
-  namedSiteList = new NamedSite[namedSiteListSize];
+  namedSiteList = new NamedSite[namedSiteListSize];                                 // 域名及域名解析状态
   IPSiteList = new IPSite[IPSiteListSize];
-  okSites = new Fifo<IPSite>(2000);
+  okSites = new Fifo<IPSite>(2000);                                                 // 经过dns解析带爬取的数据
   dnsSites = new Fifo<NamedSite>(2000);
   seen = new hashTable(!reload);
 #ifdef NO_DUP
@@ -147,7 +147,7 @@ global::global (int argc, char *argv[]) {
   strtmp.addString(" ");
   strtmp.addString(sender);
 #ifdef SPECIFICSEARCH
-  strtmp.addString("\r\nAccept: text/html");
+  strtmp.addString("\r\nAccept: text/html");                                        //
   int i=0;
   while (contentTypes[i] != NULL) {
     strtmp.addString(", ");
@@ -165,25 +165,25 @@ global::global (int argc, char *argv[]) {
   strtmp.addString(userAgent);
   strtmp.addString(" (");
   strtmp.addString(sender);
-  strtmp.addString(")\r\n\r\n");
+  strtmp.addString(")\r\n\r\n");                                                    // 请求头
   headersRobots = strtmp.giveString();
 #ifdef THREAD_OUTPUT
-  userConns = new ConstantSizedFifo<Connexion>(nb_conn);
+  userConns = new ConstantSizedFifo<Connexion>(nb_conn);                            //
 #endif
   freeConns = new ConstantSizedFifo<Connexion>(nb_conn);
   connexions = new Connexion [nb_conn];
-  for (uint i=0; i<nb_conn; i++) {
+  for (uint i = 0; i < nb_conn; ++ i) {
 	freeConns->put(connexions+i);
   }
   // init poll structures
-  sizePoll = nb_conn + maxInput;
+  sizePoll = nb_conn + maxInput;                                                    // 初始化poll
   pollfds = new struct pollfd[sizePoll];
   posPoll = 0;
   maxFds = sizePoll;
-  ansPoll = new short[maxFds];
+  ansPoll = new short[maxFds];                                                      // short 2^15
   // init non blocking dns calls
   adns_initflags flags =
-	adns_initflags (adns_if_nosigpipe | adns_if_noerrprint);
+	adns_initflags (adns_if_nosigpipe | adns_if_noerrprint);                        // dns 初始化
   adns_init(&ads, flags, NULL);
   // call init functions of all modules
   initSpecific();
@@ -191,23 +191,23 @@ global::global (int argc, char *argv[]) {
   initOutput();
   initSite();
   // let's ignore SIGPIPE
-  static struct sigaction sn, so;
+  static struct sigaction sn, so;                                                   // 忽略管道破裂的错误
   sigemptyset(&sn.sa_mask);
   sn.sa_flags = SA_RESTART;
   sn.sa_handler = SIG_IGN;
-  if (sigaction(SIGPIPE, &sn, &so)) {
+  if (sigaction(SIGPIPE, &sn, &so)) {                                               // 捕获信号
       std::cerr << "Unable to disable SIGPIPE : " << strerror(errno) << std::endl;
   }
 }
 
 /** Destructor : never used because the program should never end !
  */
-global::~global () {
+global::~global () {                                                                // 析构函数
   assert(false);
 }
 
 /** parse configuration file */
-void global::parseFile (char *file) {
+void global::parseFile (char *file) {                                               // 读取配置文件并解析
   int fds = open(file, O_RDONLY);
   if (fds < 0) {
       std::cerr << "cannot open config file (" << file << ") : "
@@ -217,17 +217,17 @@ void global::parseFile (char *file) {
   char *tmp = readfile(fds);
   close(fds);
   // suppress commentary
-  bool eff = false;
-  for (int i=0; tmp[i] != 0; i++) {
+  bool eff = false;                                                                 // 配置文件注释行不读入
+  for (int i = 0; tmp[i] != 0; ++ i) {                                              // 删除某行"#"及其后的所有内容
 	switch (tmp[i]) {
-	case '\n': eff = false; break;
-	case '#': eff = true; // no break !!!
+	case '\n': eff = false; break;                                                  //
+	case '#': eff = true;                                                           // 
 	default: if (eff) tmp[i] = ' ';
 	}
   }
-  char *posParse = tmp;
+  char *posParse = tmp;                                                             // 解析并应用配置文件
   char *tok = nextToken(&posParse);
-  while (tok != NULL) {
+  while (tok != NULL) {                                                             
 	if (!strcasecmp(tok, "UserAgent")) {
 	  userAgent = newString(nextToken(&posParse));
 	} else if (!strcasecmp(tok, "From")) {
@@ -258,7 +258,7 @@ void global::parseFile (char *file) {
 		proxyAddr->sin_family = hp->h_addrtype;
 		memcpy ((char*) &proxyAddr->sin_addr, hp->h_addr, hp->h_length);
 	  }
-	  endhostent();
+	  endhostent();                                                                 //
 	  // port number
 	  tok = nextToken(&posParse);
 	  proxyAddr->sin_port = htons(atoi(tok));
@@ -287,13 +287,13 @@ void global::parseFile (char *file) {
         std::cerr << "bad configuration file : " << tok << "\n";
 	  exit(1);
 	}
-	tok = nextToken(&posParse);
+	tok = nextToken(&posParse);                                                     //
   }
   delete [] tmp;
 }
 
 /** read the domain limit */
-void global::manageDomain (char **posParse) {
+void global::manageDomain (char **posParse) {                                       // 域名管理
   char *tok = nextToken(posParse);
   if (domains == NULL) {
 	domains = new Vector<char>;
@@ -309,7 +309,7 @@ void global::manageDomain (char **posParse) {
 }
 
 /** read the forbidden extensions */
-void global::manageExt (char **posParse) {
+void global::manageExt (char **posParse) {                                          // 
   char *tok = nextToken(posParse);
   while (tok != NULL && strcasecmp(tok, "end")) {
     int l = strlen(tok);
@@ -328,17 +328,17 @@ void global::manageExt (char **posParse) {
 }
 
 /** make sure the max fds has not been reached */
-void global::verifMax (int fd) {
+void global::verifMax (int fd) {                                                    // 当fd达到最大数量时,增加
   if (fd >= maxFds) {
     int n = 2 * maxFds;
     if (fd >= n) {
       n = fd + maxFds;
     }
     short *tmp = new short[n];
-    for (int i=0; i<maxFds; i++) {
+    for (int i = 0; i < maxFds; ++ i) {
       tmp[i] = ansPoll[i];
     }
-    for (int i=maxFds; i<n; i++) {
+    for (int i = maxFds; i < n; ++ i) {
       tmp[i] = 0;
     }
     delete (ansPoll);
@@ -353,7 +353,7 @@ void global::verifMax (int fd) {
 
 /** put Connection in a coherent state
  */
-Connexion::Connexion () {
+Connexion::Connexion () {                                                           // 改变conne 状态
   state = emptyC;
   parser = NULL;
 }
@@ -366,7 +366,7 @@ Connexion::~Connexion () {
 
 /** Recycle a connexion
  */
-void Connexion::recycle () {
+void Connexion::recycle () {                                                        // 回收一个连接
   delete parser;
   request.recycle();
 }
