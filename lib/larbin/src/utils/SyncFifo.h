@@ -11,7 +11,7 @@
 
 #include "utils/mypthread.h"
 
-template <class T>
+template <class T>                                                              // 具有同步功能的存储类,适用于多线程
 class SyncFifo {
  protected:
   uint in, out;

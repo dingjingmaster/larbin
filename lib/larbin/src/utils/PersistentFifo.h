@@ -30,8 +30,8 @@ class PersistentFifo {
   // number of the file used for reading
   int fin, fout;
   // name of files
-  uint fileNameLength;
-  char *fileName;
+  uint fileNameLength;                                                                  // 
+  char *fileName;                                                                       // 存储url的文件名
   // Make fileName fit with this number
   void makeName (uint nb);
   // Give a file name for this int
@@ -45,7 +45,7 @@ class PersistentFifo {
   // number of char used in this buffer
   uint outbufPos;
   // buffer used for readLine
-  char buf[BUF_SIZE];
+  char buf[BUF_SIZE];                                                                   // 用于存储url的数据结构
   // number of char used in this buffer
   uint bufPos, bufEnd;
   // sockets for reading and writing
@@ -55,11 +55,11 @@ class PersistentFifo {
   // write an url in the out file (buffered write)
   void writeUrl (char *s);
   // Flush the out Buffer in the outFile
-  void flushOut ();
+  void flushOut ();                                                                     //
 
  public:
   /* Specific constructor */
-  PersistentFifo (bool reload, char *baseName);
+  PersistentFifo (bool reload, char *baseName);                                         // 将要抓取的url存储到本地
 
   /* Destructor */
   ~PersistentFifo ();
@@ -67,7 +67,7 @@ class PersistentFifo {
   /* get the first object (non totally blocking)
    * return NULL if there is none
    */
-  url *tryGet ();
+  url *tryGet ();                                                                       // 获取一个url
 
   /* get the first object (non totally blocking)
    * probably crash if there is none
